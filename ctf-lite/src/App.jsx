@@ -16,7 +16,7 @@ function App() {
       const data = await res.json();
       setScores(data);
     } catch (err) {
-      console.error('Error fetching scores:', err);
+      console.error('Chyba při načítání skóre:', err);
     }
   };
 
@@ -33,54 +33,48 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ team, challengeId, points }),
       });
+
       await fetchScores();
 
       if (unlocked.length < challenges.length) {
         setUnlocked([...unlocked, unlocked.length + 1]);
       }
     } catch (err) {
-      console.error('Error submitting challenge:', err);
+      console.error('Chyba při odesílání úlohy:', err);
     }
   };
 
   return (
-    <div style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
+    <div style={{ maxWidth: '700px', margin: '0 auto', textAlign: 'center', fontFamily: 'Arial, sans-serif' }}>
       <h1>CTF Lite</h1>
-      <div>
+      <div style={{ marginBottom: '20px' }}>
         <label>
           Tým: 
-          <input value={team} onChange={(e) => setTeam(e.target.value)} />
+          <input value={team} onChange={(e) => setTeam(e.target.value)} style={{ marginLeft: '8px', padding: '4px 8px', fontSize: '16px' }} />
         </label>
       </div>
 
       <h2>Úlohy</h2>
       {challenges
-        .filter((c) => unlocked.includes(c.id))
-        .map((c) => (
-          <ChallengeCard 
-            key={c.id} 
-            challenge={c} 
-            onSubmit={submitChallenge} 
-            scores={scores[team] || {}} 
-          />
+        .filter(c => unlocked.includes(c.id))
+        .map(c => (
+          <ChallengeCard key={c.id} challenge={c} onSubmit={submitChallenge} scores={scores[team] || {}} />
         ))}
 
       <SubmitForm
         currentTeam={team}
         challenges={challenges}
         solved={scores}
-        onScoreUpdate={submitChallenge}
+        onScoreUpdate={(challengeId, points) => submitChallenge(challengeId, points)}
       />
 
       <h2>Scoreboard</h2>
-      <table style={{ margin: '0 auto', borderCollapse: 'collapse', width: '100%' }}>
+      <table style={{ margin: '20px auto', borderCollapse: 'collapse', width: '100%' }}>
         <thead>
           <tr>
-            <th>Tým</th>
-            {challenges.map((c) => (
-              <th key={c.id}>{c.name}</th>
-            ))}
-            <th>Celkem</th>
+            <th style={{ border: '1px solid #ccc', padding: '8px' }}>Tým</th>
+            {challenges.map(c => <th key={c.id} style={{ border: '1px solid #ccc', padding: '8px' }}>{c.title}</th>)}
+            <th style={{ border: '1px solid #ccc', padding: '8px' }}>Celkem</th>
           </tr>
         </thead>
         <tbody>
@@ -88,11 +82,9 @@ function App() {
             const total = Object.values(s || {}).reduce((a, b) => a + b, 0);
             return (
               <tr key={t}>
-                <td>{t}</td>
-                {challenges.map((c) => (
-                  <td key={c.id}>{s?.[c.id] || 0}</td>
-                ))}
-                <td>{total}</td>
+                <td style={{ border: '1px solid #ccc', padding: '8px' }}>{t}</td>
+                {challenges.map(c => <td key={c.id} style={{ border: '1px solid #ccc', padding: '8px' }}>{s?.[c.id] || 0}</td>)}
+                <td style={{ border: '1px solid #ccc', padding: '8px' }}>{total}</td>
               </tr>
             );
           })}

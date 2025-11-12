@@ -24,7 +24,6 @@ export default function SubmitForm({ onScoreUpdate, currentTeam, challenges, sol
     }
 
     onScoreUpdate(challenge.id, challenge.points);
-
     setMessage(`Správný flag! +${challenge.points} bodů`);
     setFlag('');
   };
@@ -33,14 +32,17 @@ export default function SubmitForm({ onScoreUpdate, currentTeam, challenges, sol
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '20px' }}>
       <input
         type="text"
-        placeholder="Flag"
+        placeholder="Zadej flag"
         value={flag}
         onChange={(e) => setFlag(e.target.value)}
         required
         style={{ padding: '8px', fontSize: '16px', borderRadius: '4px' }}
       />
-      <button type="submit" style={{ padding: '8px', fontSize: '16px', borderRadius: '4px', cursor: 'pointer' }}>
-        Odevzdat
+      <button
+        type="submit"
+        style={{ padding: '8px', fontSize: '16px', borderRadius: '4px', cursor: 'pointer', backgroundColor: '#28a745', color: '#fff', border: 'none' }}
+      >
+        Odevzdat flag
       </button>
       <p>{message}</p>
     </form>
