@@ -1,83 +1,88 @@
-import React, { useState } from 'react';
-import ChallengeCard from './components/ChallengeCard';
-import SubmitForm from './components/SubmitForm';
-import Scoreboard from './components/Scoreboard';
-import { challenges } from './data/challenges';
+import { useState, useEffect } from 'react'
+import ChallengeCard from './ChallengeCard'
+import challenges from './challenges' // pole s úlohami
 
-export default function App() {
-  const [scores, setScores] = useState({});
-  const [solved, setSolved] = useState({}); // vyřešené úlohy podle týmu
-  const [currentTeam, setCurrentTeam] = useState('');
+const FRONTEND_URL = 'https://ctf-worker.spaniklukas.workers.dev/' // URL tvého Workeru
 
-  // správně aktualizuje skóre a vyřešené úlohy
-  const handleScoreUpdate = (team, challengeId, points) => {
-    if (!team) return;
+function App() {
+  const [team, setTeam] = useState('Team1')
+  const [scores, setScores] = useState({})
+  const [unlocked, setUnlocked] = useState([1]) // první úloha odemčená
 
-    // kontrola, zda tým už úlohu nevyřešil
-    if (solved[team]?.includes(challengeId)) return;
+  // Načtení scoreboardu z Workeru
+  const fetchScores = async () => {
+    const res = await fetch(`${FRONTEND_URL}/api/score`)
+    const data = await res.json()
+    setScores(data)
+  }
 
-    setScores(prev => ({
-      ...prev,
-      [team]: (prev[team] || 0) + points
-    }));
+  useEffect(() => {
+    fetchScores()
+  }, [])
 
-    setSolved(prev => ({
-      ...prev,
-      [team]: [...(prev[team] || []), challengeId]
-    }));
-  };
+  // Odevzdání úlohy
+  const submitChallenge = async (challengeId, points) => {
+    if (scores[team]?.[challengeId]) return alert('Už jste tuto úlohu vyřešili')
 
-  // odemčení úloh podle toho, co tým vyřešil
-  const unlockedChallenges = (team) => {
-    if (!team || !solved[team] || solved[team].length === 0) {
-      return [challenges[0]];
+    await fetch(`${FRONTEND_URL}/api/score`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ team, challengeId, points }),
+    })
+
+    await fetchScores()
+
+    // odemknout další úlohu
+    if (unlocked.length < challenges.length) {
+      setUnlocked([...unlocked, unlocked.length + 1])
     }
-    const lastSolvedIndex = Math.max(...solved[team].map(id => challenges.findIndex(c => c.id === id)));
-    return challenges.slice(0, lastSolvedIndex + 2);
-  };
+  }
 
   return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      flexDirection: 'column',
-      minHeight: '100vh',
-      padding: '16px',
-      fontFamily: 'Arial, sans-serif'
-    }}>
-      <h1 style={{ textAlign: 'center' }}>CTF Lite</h1>
-
-      <div style={{ marginBottom: '24px' }}>
-        <input
-          type="text"
-          placeholder="Jméno týmu"
-          value={currentTeam}
-          onChange={(e) => setCurrentTeam(e.target.value)}
-          style={{ padding: '8px', fontSize: '16px', borderRadius: '4px' }}
-        />
+    <div style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
+      <h1>CTF Lite</h1>
+      <div>
+        <label>
+          Tým:
+          <input value={team} onChange={(e) => setTeam(e.target.value)} />
+        </label>
       </div>
 
-      <section style={{ width: '100%', maxWidth: '600px' }}>
-        <h2>Úlohy</h2>
-        {unlockedChallenges(currentTeam).map(c => (
-          <ChallengeCard key={c.id} challenge={c} />
+      <h2>Úlohy</h2>
+      {challenges
+        .filter((c) => unlocked.includes(c.id))
+        .map((c) => (
+          <ChallengeCard key={c.id} challenge={c} onSubmit={submitChallenge} scores={scores[team]} />
         ))}
-      </section>
 
-      <section style={{ marginTop: '32px', width: '100%', maxWidth: '600px' }}>
-        <h2>Odevzdej flag</h2>
-        <SubmitForm
-          currentTeam={currentTeam}
-          challenges={challenges}
-          solved={solved}
-          onScoreUpdate={handleScoreUpdate} // správné předání
-        />
-      </section>
-
-      <section style={{ marginTop: '32px', width: '100%', maxWidth: '600px' }}>
-        <Scoreboard scores={scores} />
-      </section>
+      <h2>Scoreboard</h2>
+      <table style={{ margin: '0 auto', borderCollapse: 'collapse' }}>
+        <thead>
+          <tr>
+            <th>Tým</th>
+            {challenges.map((c) => (
+              <th key={c.id}>{c.name}</th>
+            ))}
+            <th>Celkem</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Object.entries(scores).map(([t, s]) => {
+            const total = Object.values(s).reduce((a, b) => a + b, 0)
+            return (
+              <tr key={t}>
+                <td>{t}</td>
+                {challenges.map((c) => (
+                  <td key={c.id}>{s[c.id] || 0}</td>
+                ))}
+                <td>{total}</td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
     </div>
-  );
+  )
 }
+
+export default App
