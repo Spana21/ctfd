@@ -1,27 +1,44 @@
+import React, { useState } from 'react';
+
 export default function ChallengeCard({ challenge, onSubmit, scores }) {
-  const [input, setInput] = useState('')
+  const [message, setMessage] = useState('');
+  const [flag, setFlag] = useState('');
 
-  const handleSubmit = () => {
-    if (!input) return
-    onSubmit(challenge.id, challenge.points)
-    setInput('')
-  }
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-  const solved = scores?.[challenge.id]
+    if (scores?.[challenge.id]) {
+      setMessage('Už jste tuto úlohu vyřešili!');
+      return;
+    }
+
+    if (!flag.trim()) {
+      setMessage('Zadejte flag!');
+      return;
+    }
+
+    if (flag.trim() === challenge.flag) {
+      onSubmit(challenge.id, challenge.points);
+      setMessage(`Správný flag! +${challenge.points} bodů`);
+      setFlag('');
+    } else {
+      setMessage('Špatný flag!');
+    }
+  };
 
   return (
-    <div style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px' }}>
-      <h3>{challenge.name}</h3>
-      <p>{challenge.description}</p>
-      <p>Body: {challenge.points}</p>
-      {solved ? (
-        <p style={{ color: 'green' }}>Vyřešeno</p>
-      ) : (
-        <>
-          <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Zadejte flag" />
-          <button onClick={handleSubmit}>Odevzdat</button>
-        </>
-      )}
+    <div style={{ border: '1px solid #ccc', padding: '10px', margin: '10px 0', borderRadius: '5px' }}>
+      <h3>{challenge.name} ({challenge.points} bodů)</h3>
+      <form onSubmit={handleSubmit}>
+        <input 
+          type="text" 
+          value={flag} 
+          onChange={(e) => setFlag(e.target.value)} 
+          placeholder="Flag" 
+        />
+        <button type="submit">Odevzdat</button>
+      </form>
+      <p>{message}</p>
     </div>
-  )
+  );
 }

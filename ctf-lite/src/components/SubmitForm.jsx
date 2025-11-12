@@ -8,7 +8,7 @@ export default function SubmitForm({ onScoreUpdate, currentTeam, challenges, sol
     e.preventDefault();
 
     if (!currentTeam) {
-      setMessage('Zadej jméno týmu!');
+      setMessage('Zadej jméno!');
       return;
     }
 
@@ -18,20 +18,19 @@ export default function SubmitForm({ onScoreUpdate, currentTeam, challenges, sol
       return;
     }
 
-    if (solved[currentTeam]?.includes(challenge.id)) {
+    if (solved[currentTeam]?.[challenge.id]) {
       setMessage('Tuto úlohu jste už vyřešili!');
       return;
     }
 
-    // předání správných parametrů do App.jsx
-    onScoreUpdate(currentTeam, challenge.id, challenge.points);
+    onScoreUpdate(challenge.id, challenge.points);
 
     setMessage(`Správný flag! +${challenge.points} bodů`);
     setFlag('');
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '20px' }}>
       <input
         type="text"
         placeholder="Flag"
