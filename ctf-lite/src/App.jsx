@@ -1,16 +1,15 @@
 import { useState, useEffect } from 'react';
-import ChallengeCard from 'components/ChallengeCard';
-import SubmitForm from 'components/SubmitForm';
-import challenges from 'components/challenges'; // pole s úlohami
+import ChallengeCard from './components/ChallengeCard';
+import SubmitForm from './components/SubmitForm';
+import challenges from './components/challenges';
 
-const FRONTEND_URL = 'https://ctf-worker.spaniklukas.workers.dev'; // tvůj Worker URL
+const FRONTEND_URL = 'https://ctf-worker.spaniklukas.workers.dev';
 
 function App() {
   const [team, setTeam] = useState('Team1');
   const [scores, setScores] = useState({});
-  const [unlocked, setUnlocked] = useState([1]); // první úloha odemčená
+  const [unlocked, setUnlocked] = useState([1]);
 
-  // Načtení scoreboardu z Workeru
   const fetchScores = async () => {
     try {
       const res = await fetch(`${FRONTEND_URL}/api/score`);
@@ -25,9 +24,7 @@ function App() {
     fetchScores();
   }, []);
 
-  // Odevzdání úlohy / flagu
   const submitChallenge = async (challengeId, points) => {
-    // pokud už tým vyřešil úlohu
     if (scores[team]?.[challengeId]) return alert('Už jste tuto úlohu vyřešili');
 
     try {
@@ -36,10 +33,8 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ team, challengeId, points }),
       });
-
       await fetchScores();
 
-      // odemknout další úlohu
       if (unlocked.length < challenges.length) {
         setUnlocked([...unlocked, unlocked.length + 1]);
       }
