@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import ChallengeCard from './ChallengeCard';
-import SubmitForm from './SubmitForm';
-import challenges from './challenges'; // pole s úlohami
+import ChallengeCard from 'components/ChallengeCard';
+import SubmitForm from 'components/SubmitForm';
+import challenges from 'components/challenges'; // pole s úlohami
 
 const FRONTEND_URL = 'https://ctf-worker.spaniklukas.workers.dev'; // tvůj Worker URL
 
