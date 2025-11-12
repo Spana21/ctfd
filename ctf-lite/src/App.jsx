@@ -1,97 +1,141 @@
-import { useState, useEffect } from 'react';
-import ChallengeCard from './components/ChallengeCard';
-import SubmitForm from './components/SubmitForm';
-import { challenges } from './data/challenges';
+import { useState, useEffect } from 'react'
+import ChallengeCard from './components/ChallengeCard'
+import SubmitForm from './components/SubmitForm'
+import challenges from './data/challenges'
 
-const FRONTEND_URL = 'https://ctf-worker.spaniklukas.workers.dev';
+const FRONTEND_URL = 'https://ctf-worker.spaniklukas.workers.dev'
 
 function App() {
-  const [team, setTeam] = useState('Team1');
-  const [scores, setScores] = useState({});
-  const [unlocked, setUnlocked] = useState([1]);
+  const [team, setTeam] = useState('Team1')
+  const [scores, setScores] = useState({})
+  const [unlocked, setUnlocked] = useState([1])
 
   const fetchScores = async () => {
-    try {
-      const res = await fetch(`${FRONTEND_URL}/api/score`);
-      const data = await res.json();
-      setScores(data);
-    } catch (err) {
-      console.error('Chyba při načítání skóre:', err);
-    }
-  };
+    const res = await fetch(`${FRONTEND_URL}/api/score`)
+    const data = await res.json()
+    setScores(data)
+  }
 
   useEffect(() => {
-    fetchScores();
-  }, []);
+    fetchScores()
+  }, [])
 
   const submitChallenge = async (challengeId, points) => {
-    if (scores[team]?.[challengeId]) return alert('Už jste tuto úlohu vyřešili');
+    if (scores[team]?.[challengeId]) return alert('Už jste tuto úlohu vyřešili')
 
-    try {
-      await fetch(`${FRONTEND_URL}/api/score`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ team, challengeId, points }),
-      });
+    await fetch(`${FRONTEND_URL}/api/score`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ team, challengeId, points }),
+    })
 
-      await fetchScores();
+    await fetchScores()
 
-      if (unlocked.length < challenges.length) {
-        setUnlocked([...unlocked, unlocked.length + 1]);
-      }
-    } catch (err) {
-      console.error('Chyba při odesílání úlohy:', err);
+    if (unlocked.length < challenges.length) {
+      setUnlocked([...unlocked, unlocked.length + 1])
     }
-  };
+  }
 
   return (
-    <div style={{ maxWidth: '700px', margin: '0 auto', textAlign: 'center', fontFamily: 'Arial, sans-serif' }}>
-      <h1>CTF Lite</h1>
-      <div style={{ marginBottom: '20px' }}>
-        <label>
-          Tým: 
-          <input value={team} onChange={(e) => setTeam(e.target.value)} style={{ marginLeft: '8px', padding: '4px 8px', fontSize: '16px' }} />
-        </label>
-      </div>
+    <div
+      style={{
+        minHeight: '100vh',
+        backgroundColor: '#f0f2f5',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        padding: '20px',
+      }}
+    >
+      <div
+        style={{
+          width: '100%',
+          maxWidth: '700px',
+          backgroundColor: '#fff',
+          borderRadius: '12px',
+          boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+          padding: '24px',
+        }}
+      >
+        <h1 style={{ textAlign: 'center', color: '#333' }}>CTF Lite</h1>
 
-      <h2>Úlohy</h2>
-      {challenges
-        .filter(c => unlocked.includes(c.id))
-        .map(c => (
-          <ChallengeCard key={c.id} challenge={c} onSubmit={submitChallenge} scores={scores[team] || {}} />
-        ))}
+        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+          <label style={{ fontWeight: 'bold', marginRight: '8px' }}>Tým:</label>
+          <input
+            value={team}
+            onChange={(e) => setTeam(e.target.value)}
+            style={{
+              padding: '8px',
+              border: '1px solid #ccc',
+              borderRadius: '6px',
+              width: '150px',
+              textAlign: 'center',
+            }}
+          />
+        </div>
 
-      <SubmitForm
-        currentTeam={team}
-        challenges={challenges}
-        solved={scores}
-        onScoreUpdate={(challengeId, points) => submitChallenge(challengeId, points)}
-      />
+        <SubmitForm
+          onScoreUpdate={(team, challengeId, points) => submitChallenge(challengeId, points)}
+          currentTeam={team}
+          challenges={challenges}
+          solved={scores}
+        />
 
-      <h2>Scoreboard</h2>
-      <table style={{ margin: '20px auto', borderCollapse: 'collapse', width: '100%' }}>
-        <thead>
-          <tr>
-            <th style={{ border: '1px solid #ccc', padding: '8px' }}>Tým</th>
-            {challenges.map(c => <th key={c.id} style={{ border: '1px solid #ccc', padding: '8px' }}>{c.title}</th>)}
-            <th style={{ border: '1px solid #ccc', padding: '8px' }}>Celkem</th>
-          </tr>
-        </thead>
-        <tbody>
-          {Object.entries(scores).map(([t, s]) => {
-            const total = Object.values(s || {}).reduce((a, b) => a + b, 0);
-            return (
-              <tr key={t}>
-                <td style={{ border: '1px solid #ccc', padding: '8px' }}>{t}</td>
-                {challenges.map(c => <td key={c.id} style={{ border: '1px solid #ccc', padding: '8px' }}>{s?.[c.id] || 0}</td>)}
-                <td style={{ border: '1px solid #ccc', padding: '8px' }}>{total}</td>
+        <h2 style={{ textAlign: 'center', marginTop: '30px' }}>Úlohy</h2>
+
+        {challenges
+          .filter((c) => unlocked.includes(c.id))
+          .map((c) => (
+            <ChallengeCard
+              key={c.id}
+              challenge={c}
+              onSubmit={submitChallenge}
+              scores={scores[team]}
+            />
+          ))}
+
+        <h2 style={{ textAlign: 'center', marginTop: '40px' }}>Scoreboard</h2>
+        <div style={{ overflowX: 'auto' }}>
+          <table
+            style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+              textAlign: 'center',
+              fontSize: '16px',
+            }}
+          >
+            <thead>
+              <tr style={{ backgroundColor: '#007bff', color: '#fff' }}>
+                <th style={{ padding: '10px' }}>Tým</th>
+                {challenges.map((c) => (
+                  <th key={c.id} style={{ padding: '10px' }}>
+                    {c.title}
+                  </th>
+                ))}
+                <th style={{ padding: '10px' }}>Celkem</th>
               </tr>
-            );
-          })}
-        </tbody>
-      </table>
+            </thead>
+            <tbody>
+              {Object.entries(scores).map(([t, s]) => {
+                const total = Object.values(s).reduce((a, b) => a + b, 0)
+                return (
+                  <tr key={t} style={{ backgroundColor: '#f9f9f9' }}>
+                    <td style={{ padding: '8px', fontWeight: 'bold' }}>{t}</td>
+                    {challenges.map((c) => (
+                      <td key={c.id} style={{ padding: '8px' }}>
+                        {s[c.id] || 0}
+                      </td>
+                    ))}
+                    <td style={{ padding: '8px', fontWeight: 'bold' }}>{total}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
