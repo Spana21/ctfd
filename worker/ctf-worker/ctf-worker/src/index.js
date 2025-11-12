@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { cors } from 'hono/cors'
+import { cors } from 'hono/cors' 
 
 // const app = new Hono<{ Bindings: Env }>()  → změna:
 const app = new Hono()
@@ -7,7 +7,7 @@ const app = new Hono()
 app.use(
   '*',
   cors({
-    origin: 'https://ctfd-7xq.pages.dev/',
+    origin: 'https://ctfd-7xq.pages.dev',
     allowMethods: ['GET', 'POST', 'OPTIONS'],
   })
 )

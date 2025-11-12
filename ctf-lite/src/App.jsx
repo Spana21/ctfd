@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import ChallengeCard from './ChallengeCard'
 import challenges from './challenges' // pole s úlohami
 
-const FRONTEND_URL = 'https://ctf-worker.spaniklukas.workers.dev/' // URL tvého Workeru
+const FRONTEND_URL = 'https://ctf-worker.spaniklukas.workers.dev' // URL tvého Workeru
 
 function App() {
   const [team, setTeam] = useState('Team1')
